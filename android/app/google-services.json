@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "258782339328",
+    "project_id": "wesal-6a246",
+    "storage_bucket": "wesal-6a246.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258782339328:android:da1e540729bb1fa0a8d3e5",
+        "android_client_info": {
+          "package_name": "com.example.autism"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuRJv0FPrA26v_3FUrF3xOBV1q8NDFacA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258782339328:android:d9fee14c39b177aba8d3e5",
+        "android_client_info": {
+          "package_name": "com.example.wesal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuRJv0FPrA26v_3FUrF3xOBV1q8NDFacA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

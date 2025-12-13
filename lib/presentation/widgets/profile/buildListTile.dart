@@ -1,0 +1,20 @@
+import 'package:wesal/logic/services/colors_app.dart';
+import 'package:flutter/material.dart';
+
+Widget buildListTile({
+  required IconData icon,
+  required String title,
+  Widget? trailing,
+  required VoidCallback onTap,
+}) {
+  return ListTile(
+    leading: Icon(icon, color: ColorsApp().primaryColor),
+    title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+    trailing: trailing,
+    onTap: onTap,
+  );
+}
+
+Widget divider() {
+  return const Divider(height: 0, thickness: 0.5, indent: 20, endIndent: 20);
+}

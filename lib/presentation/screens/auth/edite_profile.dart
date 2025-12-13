@@ -1,0 +1,146 @@
+import 'dart:io';
+
+import 'package:wesal/logic/services/settings_services/settings_services.dart';
+import 'package:wesal/logic/services/variables_app.dart';
+import 'package:wesal/presentation/widgets/auth/sign_up_in_customTextFields.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class EditeProfile extends StatefulWidget {
+  const EditeProfile({super.key});
+
+  @override
+  State<EditeProfile> createState() => _EditeProfileState();
+}
+
+class _EditeProfileState extends State<EditeProfile> {
+  Future<void> _pickImage() async {
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        selectedImage = File(picked.path);
+      });
+    }
+  }
+
+  Map<String, dynamic>? profileData;
+  final profileService = ProfileService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadProfile();
+  }
+
+  void loadProfile() async {
+    final data = await profileService.getProfile();
+    if (!mounted) return;
+    setState(() {
+      profileData = data;
+      editeProfileName.text = profileData?['full_name'] ?? '';
+      editProfileEmail.text = profileData?['email'] ?? '';
+      editProfilePhone.text = profileData?['phone'] ?? '';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('Edite Profile'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // صورة البروفايل
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 75,
+                    backgroundImage: selectedImage != null
+                        ? FileImage(selectedImage!)
+                        : profileData?['avatar_url'] != null
+                        ? NetworkImage(profileData!['avatar_url'])
+                              as ImageProvider
+                        : null,
+                    child:
+                        selectedImage == null &&
+                            profileData?['avatar_url'] == null
+                        ? Icon(
+                            Icons.camera_alt,
+                            size: 40,
+                            color: Colors.grey[700],
+                          )
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                CustomTextFormField(
+                  focusNode: editProfileNameFocus,
+                  controller: editeProfileName,
+                  hintText: 'Full Name',
+                  icon: Icons.person,
+                  validator: addChildNameValidator,
+                ),
+                const SizedBox(height: 20),
+                CustomTextFormField(
+                  focusNode: editProfileEmailFocus,
+                  controller: editProfileEmail,
+                  hintText: 'Email',
+                  icon: Icons.email,
+                  validator: emailValidator,
+                ),
+                const SizedBox(height: 20),
+                CustomTextFormField(
+                  keyboardType: TextInputType.number,
+                  focusNode: editProfilePhoneFocus,
+                  controller: editProfilePhone,
+                  hintText: 'Phone',
+                  icon: Icons.phone,
+                  validator: addChildNameValidator,
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () async {
+                    await profileService.updateProfile(context);
+                    Navigator.pop(context, true);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF3789C3),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
