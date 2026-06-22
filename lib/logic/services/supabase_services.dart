@@ -157,17 +157,17 @@ class SupabaseServices {
       if (e.toString().contains("Invalid login credentials")) {
         _showSignUpDialog(context);
       } else {
-        AwesomeDialog? dialog;
-
-        dialog = AwesomeDialog(
-          context: context,
-          dismissOnTouchOutside: false,
-          dialogType: DialogType.warning,
-          animType: AnimType.bottomSlide,
-          btnOkOnPress: () {},
-          desc: "Please verify your account before logging in",
-        )..show();
-        dialog;
+        // AwesomeDialog? dialog;
+        //
+        // dialog = AwesomeDialog(
+        //   context: context,
+        //   dismissOnTouchOutside: false,
+        //   dialogType: DialogType.warning,
+        //   animType: AnimType.bottomSlide,
+        //   btnOkOnPress: () {},
+        //   desc: "Please verify your account before logging in",
+        // )..show();
+        // dialog;
         print('Error: $e');
       }
     }

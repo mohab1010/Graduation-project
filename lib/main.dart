@@ -23,13 +23,13 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Supabase.initialize(
-    url: "https://rlcblpjfmxljqljbvyzr.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsY2JscGpmbXhsanFsamJ2eXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNzg3NjAsImV4cCI6MjA4MDk1NDc2MH0.pONkiYjxUucbHIxhhA_eW7cCwmYkjuVJbi6GyuMq1mE",
-  );
+    url: "https://phhqpmglrxjpfyieoncf.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoaHFwbWdscnhqcGZ5aWVvbmNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0ODU0NDEsImV4cCI6MjA5NDA2MTQ0MX0.4F7VvuNO7LCNvK8jAvbiypGIJ1G8XsV2fL2H779aFHw",
+);
   await setupDI();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await getIt<NotificationsHelper>().initNotifications();

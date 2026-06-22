@@ -1,0 +1,170 @@
+Folder PATH listing
+Volume serial number is 2426-9F62
+C:\USERS\MOHAB\ONEDRIVE - NAHDA UNIVERSITY\DESKTOP\WESAL APP\WESAL-PROJECT\LIB
+¦   firebase_options.dart
+¦   main.dart
+¦   
++---logic
+¦   +---cubit
+¦   ¦   +---add_child
+¦   ¦   ¦   +---cubit
+¦   ¦   ¦           children_cubit.dart
+¦   ¦   ¦           children_state.dart
+¦   ¦   ¦           
+¦   ¦   +---chat
+¦   ¦   ¦       chat_cubit.dart
+¦   ¦   ¦       chat_state.dart
+¦   ¦   ¦       
+¦   ¦   +---chat_with_ai
+¦   ¦   ¦   +---cubit
+¦   ¦   ¦           chat_with_ai_cubit.dart
+¦   ¦   ¦           chat_with_ai_state.dart
+¦   ¦   ¦           
+¦   ¦   +---my_chats
+¦   ¦   ¦   +---cubit
+¦   ¦   ¦           my_chats_cubit.dart
+¦   ¦   ¦           my_chats_state.dart
+¦   ¦   ¦           
+¦   ¦   +---on_bording
+¦   ¦           on_boarding_cubit.dart
+¦   ¦           on_boarding_state.dart
+¦   ¦           
+¦   +---error
+¦   ¦       supabase_exceptions.dart
+¦   ¦       
+¦   +---models
+¦   ¦       chat_message_model.dart
+¦   ¦       chat_model.dart
+¦   ¦       message_model.dart
+¦   ¦       
+¦   +---services
+¦       ¦   app_constants.dart
+¦       ¦   colors_app.dart
+¦       ¦   sized_config.dart
+¦       ¦   supabase_services.dart
+¦       ¦   variables_app.dart
+¦       ¦   
+¦       +---add_child_services
+¦       ¦       insert_child.dart
+¦       ¦       
+¦       +---add_tips_services
+¦       ¦       add_tips_services.dart
+¦       ¦       
+¦       +---di
+¦       ¦       dependancy_injection.dart
+¦       ¦       
+¦       +---doctors_screen
+¦       ¦       save_filter_doctors.dart
+¦       ¦       
+¦       +---notifications
+¦       ¦       fcm_notification.dart
+¦       ¦       local_notifications_services.dart
+¦       ¦       
+¦       +---schedule_services
+¦       ¦       schedule_service.dart
+¦       ¦       
+¦       +---sessions_service
+¦       ¦       sessions_service.dart
+¦       ¦       
+¦       +---settings_services
+¦       ¦       settings_services.dart
+¦       ¦       
+¦       +---sign_up_services
+¦       ¦       save_profile_user_data.dart
+¦       ¦       
+¦       +---zego_services
+¦               zego_services.dart
+¦               
++---presentation
+    +---screens
+    ¦   ¦   home_screen.dart
+    ¦   ¦   on_boarding_screen.dart
+    ¦   ¦   role_selection_screen.dart
+    ¦   ¦   splash_screen.dart
+    ¦   ¦   
+    ¦   +---auth
+    ¦   ¦       edite_profile.dart
+    ¦   ¦       sign_in_screen.dart
+    ¦   ¦       sign_up_screen.dart
+    ¦   ¦       
+    ¦   +---chat
+    ¦   ¦       chat_screen.dart
+    ¦   ¦       
+    ¦   +---doctors
+    ¦   ¦   ¦   complete_doctor_profile_screen.dart
+    ¦   ¦   ¦   sessions_data_screen.dart
+    ¦   ¦   ¦   
+    ¦   ¦   +---BottomNavigationBarDoctor
+    ¦   ¦           chats_doctor_screen.dart
+    ¦   ¦           requests_screen.dart
+    ¦   ¦           tips_doctor_screen.dart
+    ¦   ¦           
+    ¦   +---parents
+    ¦       ¦   add_child_screen.dart
+    ¦       ¦   chat_with_ai_screen.dart
+    ¦       ¦   doctor_details_screen.dart
+    ¦       ¦   sessions_screen_parent.dart
+    ¦       ¦   
+    ¦       +---BottomNavigationBarParent
+    ¦           ¦   chats_screen.dart
+    ¦           ¦   doctors_screen.dart
+    ¦           ¦   games_screen.dart
+    ¦           ¦   tips_screen.dart
+    ¦           ¦   
+    ¦           +---settings_screen
+    ¦                   about_screen.dart
+    ¦                   contact_screen.dart
+    ¦                   settings_screen.dart
+    ¦                   
+    +---widgets
+        +---auth
+        ¦       sign_up_in_customTextFields.dart
+        ¦       sign_up_in_SocialButton.dart
+        ¦       
+        +---chat
+        ¦       chat_screen_body.dart
+        ¦       messages_list_view.dart
+        ¦       send_message.dart
+        ¦       
+        +---doctors
+        ¦   ¦   bottom_navigation_bar_doctor.dart
+        ¦   ¦   
+        ¦   +---sessions_data_screen
+        ¦   ¦       child_data_sessions.dart
+        ¦   ¦       
+        ¦   +---sessions_screen
+        ¦           orders_tabs.dart
+        ¦           
+        +---on_boarding
+        ¦       on_boarding_models.dart
+        ¦       
+        +---parent
+        ¦   ¦   bottom_navigation_bar_parent.dart
+        ¦   ¦   
+        ¦   +---add_child
+        ¦   ¦   ¦   borderRaduisWidget.dart
+        ¦   ¦   ¦   viewChildDataCardDesign.dart
+        ¦   ¦   ¦   
+        ¦   ¦   +---floatingActionButton
+        ¦   ¦           dropDown.dart
+        ¦   ¦           floatingActionButton.dart
+        ¦   ¦           pickDate.dart
+        ¦   ¦           
+        ¦   +---add_tips
+        ¦   ¦       floatingActionButton_add_tips.dart
+        ¦   ¦       
+        ¦   +---doctors_screen
+        ¦   ¦       card_gridView_widget.dart
+        ¦   ¦       drop_down_specialty.dart
+        ¦   ¦       filter_bottom_sheet.dart
+        ¦   ¦       
+        ¦   +---doctor_details
+        ¦   ¦       doctor_title_card.dart
+        ¦   ¦       drop_down_view_children.dart
+        ¦   ¦       
+        ¦   +---tips_screen
+        ¦           tips_doctor_card.dart
+        ¦           
+        +---profile
+                buildListTile.dart
+                
