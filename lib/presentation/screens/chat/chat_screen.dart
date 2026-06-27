@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:wesal/logic/cubit/chat/chat_cubit.dart';
 import 'package:wesal/logic/models/chat_model.dart';
 import 'package:wesal/logic/services/colors_app.dart';
@@ -21,7 +19,6 @@ class ChatScreen extends StatelessWidget {
       child: BlocBuilder<ChatCubit, ChatState>(
         builder: (context, state) {
           var cubit = context.read<ChatCubit>();
-          cubit.getCallUserInfo();
           return Scaffold(
             appBar: AppBar(
               elevation: 2,
@@ -32,12 +29,17 @@ class ChatScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 22,
-                    backgroundImage: NetworkImage(
-                      chatModel.chatPartnerId ==
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: () {
+                      final url = chatModel.chatPartnerId ==
                               Supabase.instance.client.auth.currentUser!.id
-                          ? chatModel.currentUserImage!
-                          : chatModel.chatPartnerImage!,
-                    ),
+                          ? chatModel.currentUserImage
+                          : chatModel.chatPartnerImage;
+                      if (url != null && url.startsWith('http')) {
+                        return NetworkImage(url) as ImageProvider;
+                      }
+                      return const AssetImage('assets/images/doctors4.jpg') as ImageProvider;
+                    }(),
                   ),
                   SizedBox(width: 12),
                   Text(
@@ -55,22 +57,54 @@ class ChatScreen extends StatelessWidget {
               ),
               actions: [
                 IconButton(
-                  onPressed: () {
-                    ZegoServices.callWithZego(
+                  onPressed: () async {
+                    if (cubit.callUserId == null) {
+                      await cubit.getCallUserInfo();
+                      if (cubit.callUserId == null) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Could not reach the other user. Please try again.')),
+                          );
+                        }
+                        return;
+                      }
+                    }
+                    final ok = await ZegoServices.callWithZego(
                       isVideoCall: false,
                       userId: cubit.callUserId!,
-                      userName: cubit.callUserName!,
+                      userName: cubit.callUserName ?? 'User',
                     );
+                    if (!ok && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to start call. Please try again.')),
+                      );
+                    }
                   },
                   icon: Icon(Icons.call, size: SizeConfig.width * 0.07),
                 ),
                 IconButton(
-                  onPressed: () {
-                    ZegoServices.callWithZego(
+                  onPressed: () async {
+                    if (cubit.callUserId == null) {
+                      await cubit.getCallUserInfo();
+                      if (cubit.callUserId == null) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Could not reach the other user. Please try again.')),
+                          );
+                        }
+                        return;
+                      }
+                    }
+                    final ok = await ZegoServices.callWithZego(
                       isVideoCall: true,
                       userId: cubit.callUserId!,
-                      userName: cubit.callUserName!,
+                      userName: cubit.callUserName ?? 'User',
                     );
+                    if (!ok && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to start video call. Please try again.')),
+                      );
+                    }
                   },
                   icon: Icon(
                     color: Colors.white,

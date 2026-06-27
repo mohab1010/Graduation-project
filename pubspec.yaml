@@ -44,7 +44,7 @@ dependencies:
   shared_preferences: ^2.5.3
   motion_tab_bar_v2: ^0.4.0
   weekly_date_picker: ^1.4.2
-  google_generative_ai: 0.2.0
+  google_generative_ai: ^0.4.7
   intl: ^0.19.0
   firebase_core: ^4.2.0
   dio: ^5.9.0
@@ -58,7 +58,7 @@ dependencies:
   zego_uikit: ^2.28.34
   zego_uikit_prebuilt_call: ^4.21.1
   zego_uikit_signaling_plugin: ^2.8.19
-  font_awesome_flutter: any
+  font_awesome_flutter: 11.0.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.14.1"

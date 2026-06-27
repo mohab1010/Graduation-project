@@ -26,13 +26,12 @@ class SessionsDataScreen extends StatefulWidget {
 class _SessionsDataScreenState extends State<SessionsDataScreen> {
   Map<String, dynamic>? childData;
   Map<String, dynamic>? doctorData;
+  Map<String, dynamic>? parentData;
 
   List<dynamic> sessions = [];
 
   Future<void> fetchChildAndSessions() async {
-    log(widget.sessionData.toString());
     final childId = widget.sessionData['child_id'];
-
     if (childId == null) return;
 
     final supabase = Supabase.instance.client;
@@ -48,15 +47,26 @@ class _SessionsDataScreenState extends State<SessionsDataScreen> {
           .select()
           .eq('id', widget.doctorId)
           .single();
-      log('✅ Fetched child data: $childResponse');
-      log('✅ Fetched doctor data: $doctorResponse');
+
+      // Fetch the parent's profile for correct chat avatar
+      final parentId = childResponse['parent_id']?.toString();
+      Map<String, dynamic>? parentResponse;
+      if (parentId != null) {
+        parentResponse = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .eq('id', parentId)
+            .maybeSingle();
+      }
+
       setState(() {
         childData = childResponse;
         doctorData = doctorResponse;
+        parentData = parentResponse;
         sessions = [widget.sessionData];
       });
     } catch (e) {
-      print('❌ Error: $e');
+      log('❌ Error: $e');
     }
   }
 
@@ -229,19 +239,14 @@ class _SessionsDataScreenState extends State<SessionsDataScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => ChatScreen(
                                       chatModel: ChatModel(
-                                        chatPartnerId: childData!['parent_id']
-                                            .toString(),
-                                        chatPartnerName: childData!['name'],
-                                        chatPartnerImage:
-                                            childData!['image_url'],
+                                        chatPartnerId: childData!['parent_id'].toString(),
+                                        chatPartnerName: parentData?['full_name'] ?? childData!['name'],
+                                        chatPartnerImage: parentData?['avatar_url'],
                                         currentUserId: doctorData!['id'],
-                                        currentUserImage:
-                                            doctorData!['avatar_url'],
-                                        currentUserName:
-                                            doctorData!['full_name'],
-                                        id:
-                                            doctorData!['id'] +
-                                            childData!['parent_id'].toString(),
+                                        currentUserImage: doctorData!['avatar_url'],
+                                        currentUserName: doctorData!['full_name'],
+                                        id: doctorData!['id'] + childData!['parent_id'].toString(),
+                                        callTargetId: childData!['parent_id'].toString(),
                                       ),
                                     ),
                                   ),

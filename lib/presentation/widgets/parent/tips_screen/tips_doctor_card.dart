@@ -64,11 +64,9 @@ class TipsDoctorCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               color: Colors.grey[300],
               image: DecorationImage(
-                image: NetworkImage(
-                  avatarUrl.isNotEmpty
-                      ? avatarUrl
-                      : 'https://via.placeholder.com/150',
-                ),
+                image: (avatarUrl.isNotEmpty && avatarUrl.startsWith('http'))
+                    ? NetworkImage(avatarUrl) as ImageProvider
+                    : const AssetImage('assets/images/doctors4.jpg'),
                 fit: BoxFit.cover,
               ),
             ),

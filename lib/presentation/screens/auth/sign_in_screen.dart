@@ -1,16 +1,10 @@
-import 'package:wesal/logic/cubit/add_child/cubit/children_cubit.dart';
 import 'package:wesal/logic/services/sized_config.dart';
 import 'package:wesal/presentation/widgets/auth/sign_up_in_SocialButton.dart';
 import 'package:wesal/presentation/widgets/auth/sign_up_in_customTextFields.dart';
 import 'package:wesal/logic/services/supabase_services.dart';
 import 'package:wesal/logic/services/variables_app.dart';
 import 'package:wesal/presentation/screens/auth/sign_up_screen.dart';
-import 'package:wesal/presentation/widgets/doctors/bottom_navigation_bar_doctor.dart';
-import 'package:wesal/presentation/widgets/parent/bottom_navigation_bar_parent.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -93,37 +87,45 @@ class _SignInScreenState extends State<SignInScreen> {
                       setState(() => _isLoading = true); // تشغيل التحميل
 
                       try {
-                        await SupabaseServices().signIn(context);
-
-                        final user = Supabase.instance.client.auth.currentUser;
-                        if (user != null) {
-                          // 👇 استدعاء الجلب بعد تسجيل الدخول
-                          await context
-                              .read<ChildrenCubit>()
-                              .fetchChildrenForCurrentUser();
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.setString('parent_id', user.id);
-                          // Navigator.pushReplacement(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => userRole == 'doctor'
-                          //         ? MainBottomNavDoctor()
-                          //         : MainBottomNavParent(),
-                          //   ),
-                          // );
-                        }
+                        await SupabaseServices().signIn(context).timeout(
+                          const Duration(seconds: 90),
+                          onTimeout: () => throw Exception(
+                              'Connection timed out. Check your internet and try again.'),
+                        );
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('❌ Error: $e'),
-                            backgroundColor: Colors.red,
+                        if (!mounted) return;
+                        final msg = e.toString().toLowerCase();
+                        String display;
+                        if (msg.contains('invalid login credentials') ||
+                            msg.contains('invalid_credentials')) {
+                          display = 'Wrong email or password. Please try again.';
+                        } else if (msg.contains('email') &&
+                            msg.contains('confirm')) {
+                          display =
+                              'Please verify your email first, then try again.';
+                        } else if (msg.contains('timed out') ||
+                            msg.contains('timeout')) {
+                          display =
+                              'Connection is slow. Please check your internet and try again.';
+                        } else {
+                          display = e.toString().replaceAll('Exception: ', '');
+                        }
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Login Failed'),
+                            content: Text(display),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                       } finally {
                         if (!mounted) return;
-                        setState(
-                          () => _isLoading = false,
-                        ); // إيقاف التحميل مهما كانت النتيجة
+                        setState(() => _isLoading = false);
                       }
                     },
                     child: Container(
@@ -153,54 +155,6 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                     ),
                   ),
-
-                  // GestureDetector(
-                  //   onTap: () async {
-                  //     await SupabaseServices().signIn(context);
-
-                  //     final user = Supabase.instance.client.auth.currentUser;
-                  //     if (user != null) {
-                  //       // 👇 استدعاء الجلب بعد تسجيل الدخول
-                  //       await context
-                  //           .read<ChildrenCubit>()
-                  //           .fetchChildrenForCurrentUser();
-
-                  //       final currentUser =
-                  //           await Supabase.instance.client.auth.currentUser;
-                  //       if (currentUser != null) {
-                  //         final prefs = await SharedPreferences.getInstance();
-                  //         await prefs.setString('parent_id', currentUser.id);
-                  //       }
-
-                  //       // 👇 بعدين روح على صفحة AddChild
-                  //       Navigator.pushReplacement(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //           builder: (context) => userRole == 'doctor'
-                  //               ? HomeScreen()
-                  //               : MainBottomNav(),
-                  //         ),
-                  //       );
-                  //     }
-                  //   },
-                  //   child: Container(
-                  //     width: double.infinity,
-                  //     height: 50,
-                  //     decoration: BoxDecoration(
-                  //       color: Color(0xFF3789C3),
-                  //       borderRadius: BorderRadius.circular(25),
-                  //     ),
-                  //     child: Center(
-                  //       child: Text(
-                  //         'Sign In',
-                  //         style: TextStyle(
-                  //           color: Colors.white,
-                  //           fontWeight: FontWeight.bold,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   SizedBox(height: 20),
                   Center(
                     child: Text(

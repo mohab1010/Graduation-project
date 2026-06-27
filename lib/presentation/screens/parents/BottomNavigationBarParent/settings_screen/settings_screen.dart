@@ -2,7 +2,10 @@ import 'package:wesal/logic/cubit/chat_with_ai/cubit/chat_with_ai_cubit.dart';
 import 'package:wesal/logic/services/settings_services/settings_services.dart';
 import 'package:wesal/logic/services/variables_app.dart';
 import 'package:wesal/presentation/screens/parents/BottomNavigationBarParent/settings_screen/about_screen.dart';
+import 'package:wesal/presentation/screens/parents/BottomNavigationBarParent/settings_screen/app_settings_screen.dart';
+import 'package:wesal/presentation/screens/parents/BottomNavigationBarParent/settings_screen/change_password_screen.dart';
 import 'package:wesal/presentation/screens/parents/BottomNavigationBarParent/settings_screen/contact_screen.dart';
+import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams;
 import 'package:wesal/presentation/screens/parents/add_child_screen.dart';
 import 'package:wesal/presentation/screens/auth/edite_profile.dart';
 import 'package:wesal/presentation/screens/parents/chat_with_ai_screen.dart';
@@ -65,13 +68,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             CircleAvatar(
               radius: 75,
               backgroundColor: Colors.grey[300],
-              backgroundImage: selectedImage != null
-                  ? FileImage(selectedImage!)
-                  : NetworkImage(
-                          profileData?['avatar_url'] ??
-                              'assets/images/logo_without_background.png',
-                        )
-                        as ImageProvider, // ضع صورتك هنا
+              backgroundImage: (profileData?['avatar_url'] != null &&
+                      profileData!['avatar_url'].toString().startsWith('http'))
+                  ? NetworkImage(profileData!['avatar_url']) as ImageProvider
+                  : const AssetImage(
+                      'assets/images/logo_without_background.png',
+                    ),
             ),
             const SizedBox(height: 15),
             Text(
@@ -201,21 +203,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.settings,
                 title: "Settings",
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
+                  );
+                },
               ),
               divider(),
               buildListTile(
                 icon: Icons.lock,
                 title: "Change password",
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                  );
+                },
               ),
               divider(),
               buildListTile(
                 icon: Icons.card_giftcard_sharp,
                 title: "Refer friends",
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {},
+                onTap: () {
+                  SharePlus.instance.share(ShareParams(
+                    text: '🌟 Join Wesal App — the best app to support children with autism!\n'
+                        'Connect with doctors, get AI support, and manage your child\'s care.\n'
+                        'Download now and make a difference! 💙',
+                    subject: 'Join Wesal App',
+                  ));
+                },
               ),
               divider(),
               buildListTile(

@@ -71,14 +71,15 @@ class _EditeProfileState extends State<EditeProfile> {
                   child: CircleAvatar(
                     radius: 75,
                     backgroundImage: selectedImage != null
-                        ? FileImage(selectedImage!)
-                        : profileData?['avatar_url'] != null
-                        ? NetworkImage(profileData!['avatar_url'])
-                              as ImageProvider
-                        : null,
-                    child:
-                        selectedImage == null &&
-                            profileData?['avatar_url'] == null
+                        ? FileImage(selectedImage!) as ImageProvider
+                        : (profileData?['avatar_url'] != null &&
+                                profileData!['avatar_url'].toString().startsWith('http'))
+                            ? NetworkImage(profileData!['avatar_url'])
+                                as ImageProvider
+                            : null,
+                    child: selectedImage == null &&
+                            (profileData?['avatar_url'] == null ||
+                                !profileData!['avatar_url'].toString().startsWith('http'))
                         ? Icon(
                             Icons.camera_alt,
                             size: 40,
@@ -116,6 +117,7 @@ class _EditeProfileState extends State<EditeProfile> {
                 GestureDetector(
                   onTap: () async {
                     await profileService.updateProfile(context);
+                    selectedImage = null;
                     Navigator.pop(context, true);
                   },
                   child: Container(

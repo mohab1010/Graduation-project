@@ -16,6 +16,8 @@ class RequestsScreen extends StatefulWidget {
 class _RequestsScreenState extends State<RequestsScreen> {
   late Future<List<dynamic>> futureSessions;
   String currentStatus = "pending";
+  String _localDoctorName = "";
+  String _localDoctorImage = "";
 
   @override
   void initState() {
@@ -23,6 +25,13 @@ class _RequestsScreenState extends State<RequestsScreen> {
     loadDoctorName();
     loadSessions();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadDoctorName();
+  }
+
   var docId = "";
   void loadSessions() {
     final user = Supabase.instance.client.auth.currentUser;
@@ -54,14 +63,16 @@ class _RequestsScreenState extends State<RequestsScreen> {
           .eq('id', user.id)
           .single();
 
+      if (!mounted) return;
       setState(() {
-        doctorName = response['full_name'] ?? "Doctor";
-        doctorImage = response['avatar_url'] ?? 'assets/images/doctors4.jpg';
+        _localDoctorName = response['full_name'] ?? "Doctor";
+        _localDoctorImage = response['avatar_url'] ?? '';
       });
     } catch (e) {
-      print("❌ Error loading doctor name: $e");
+      if (!mounted) return;
       setState(() {
-        doctorName = "Doctor";
+        _localDoctorName = "Doctor";
+        _localDoctorImage = '';
       });
     }
   }
@@ -79,11 +90,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: NetworkImage(
-                      doctorImage.isNotEmpty
-                          ? doctorImage
-                          : 'assets/images/doctors4.jpg',
-                    ),
+                    backgroundImage: _localDoctorImage.startsWith('http')
+                        ? NetworkImage(_localDoctorImage) as ImageProvider
+                        : const AssetImage('assets/images/doctors4.jpg'),
                   ),
                   SizedBox(width: 15),
                   Column(
@@ -97,7 +106,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                         ),
                       ),
                       Text(
-                        doctorName.isNotEmpty ? doctorName : "Doctor",
+                        _localDoctorName.isNotEmpty ? _localDoctorName : "Doctor",
                         style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                       ),
                     ],

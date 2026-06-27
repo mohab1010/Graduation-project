@@ -4,7 +4,6 @@ import 'package:wesal/logic/services/colors_app.dart';
 import 'package:wesal/presentation/screens/auth/sign_in_screen.dart';
 import 'package:wesal/presentation/screens/doctors/complete_doctor_profile_screen.dart';
 import 'package:wesal/presentation/widgets/on_boarding/on_boarding_models.dart';
-import 'package:wesal/presentation/widgets/parent/bottom_navigation_bar_parent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -218,7 +217,7 @@ File? selectedImage;
 /////             select doctor or parent              ///////
 //////////////////////////////////////////////////////////////
 String userRole = '';
-String geminiApiKey = '';
+String groqApiKey = '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';
 
 void onSignUpSuccess(BuildContext context) {
   if (userRole == 'doctor') {

@@ -165,21 +165,13 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                   ),
                                 ),
 
-                                leading: Container(
-                                  width: 55,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(50),
-                                    image: DecorationImage(
-                                      image: chat.currentUserImage != null
-                                          ? NetworkImage(chat.currentUserImage!)
-                                          : const AssetImage(
-                                                  'assets/images/doctors4.jpg',
-                                                )
-                                                as ImageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                                leading: CircleAvatar(
+                                  radius: 28,
+                                  backgroundColor: Colors.grey[300],
+                                  backgroundImage: (chat.currentUserImage != null &&
+                                          chat.currentUserImage!.startsWith('http'))
+                                      ? NetworkImage(chat.currentUserImage!) as ImageProvider
+                                      : const AssetImage('assets/images/doctors4.jpg'),
                                 ),
                               ),
                             ),

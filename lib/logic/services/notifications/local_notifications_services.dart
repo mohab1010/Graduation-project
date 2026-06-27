@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotificationsServices {
@@ -24,31 +25,21 @@ class LocalNotificationsServices {
   }
 
 static Future<bool> requestNotificationPermission() async {
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  if (kIsWeb) return true;
   final bool? isGranted = await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestNotificationsPermission();
-  
-  // رجع true لو اتقبل، false لو لا (أو null، هنعاملها زي false)
-  return isGranted ?? false;
+  return isGranted ?? true;
 }
   static Future<void> showBasicNotification({
     required int id,
     required String title,
     required String body,
   }) async {
-    final bool? isGranted = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    if (isGranted == true) {
-    } else {
-      requestNotificationPermission();
-    }
+    if (kIsWeb) return;
 
-    NotificationDetails notificationDetails = NotificationDetails(
+    final NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         "channel_id",
         "channel_name",

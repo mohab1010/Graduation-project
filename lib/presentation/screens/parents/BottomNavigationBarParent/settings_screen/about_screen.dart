@@ -96,7 +96,7 @@ We aim to build a bridge between families and professionals, making autism care 
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      FaIcon(
                                         FontAwesomeIcons.phone,
                                         size: 35,
                                         color: Colors.green,
@@ -122,7 +122,7 @@ We aim to build a bridge between families and professionals, making autism care 
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  FaIcon(
                                     FontAwesomeIcons.facebook,
                                     size: 40,
                                     color: Colors.blue,
@@ -145,7 +145,7 @@ We aim to build a bridge between families and professionals, making autism care 
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  FaIcon(
                                     FontAwesomeIcons.whatsapp,
                                     size: 40,
                                     color: Colors.green,

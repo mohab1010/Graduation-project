@@ -11,6 +11,7 @@ part 'chat_state.dart';
 class ChatCubit extends Cubit<ChatState> {
   ChatCubit({required this.chatModel}) : super(ChatLoading()) {
     _initializeChat().then((_) => _loadMessages());
+    getCallUserInfo();
   }
 
   final ChatModel chatModel;
@@ -19,50 +20,47 @@ class ChatCubit extends Cubit<ChatState> {
   StreamSubscription? _streamSubscription;
   final supabase = Supabase.instance.client;
   final messageController = TextEditingController();
-  getCallUserInfo() async {
+  Future<void> getCallUserInfo() async {
     try {
-      if (supabase.auth.currentUser!.id == chatModel.currentUserId) {
-        final response = await supabase
-            .from("profiles")
-            .select("full_name,user_zego_id")
-            .eq("id", chatModel.chatPartnerId)
-            .single();
-        callUserName = response["full_name"];
-        callUserId = (response["user_zego_id"]).toString();
-      }
-      else{
-        final response = await supabase
-            .from("profiles")
-            .select("full_name,user_zego_id")
-            .eq("id", chatModel.currentUserId)
-            .single();
-        callUserName = response["full_name"];
-        callUserId = (response["user_zego_id"]).toString();
-      }
-    } catch (e) {}
+      final response = await supabase
+          .from("profiles")
+          .select("full_name, user_zego_id, id")
+          .eq("id", chatModel.callTargetId)
+          .single();
+
+      callUserName = response["full_name"] ?? "User";
+      callUserId = response["user_zego_id"]?.toString() ?? response["id"].toString();
+      log("✅ getCallUserInfo | callTargetId=${chatModel.callTargetId} | callUserId=$callUserId | callUserName=$callUserName");
+      emit(state);
+    } catch (e) {
+      log("❌ getCallUserInfo error: $e");
+    }
   }
 
   Future<void> _initializeChat() async {
     try {
-      final existing = await supabase
-          .from("chats")
-          .select("id")
-          .eq("id", chatModel.id)
+      // Fetch fresh images from profiles table
+      final doctorProfile = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', chatModel.currentUserId)
           .maybeSingle();
 
-      if (existing == null) {
-        await supabase.from("chats").insert({
-          "id": chatModel.id,
-          "doctor_id": chatModel.currentUserId,
-          "parent_id": chatModel.chatPartnerId,
-          "doctor_image": chatModel.currentUserImage,
-          "parent_image": chatModel.chatPartnerImage,
-          "doctor_name": chatModel.currentUserName,
-          "parent_name": chatModel.chatPartnerName,
-        });
-      } else {
-        log("✅ Chat with id '$chatModel.id' already exists.");
-      }
+      final parentProfile = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', chatModel.chatPartnerId)
+          .maybeSingle();
+
+      await supabase.from("chats").upsert({
+        "id": chatModel.id,
+        "doctor_id": chatModel.currentUserId,
+        "parent_id": chatModel.chatPartnerId,
+        "doctor_image": doctorProfile?['avatar_url'] ?? chatModel.currentUserImage,
+        "parent_image": parentProfile?['avatar_url'] ?? chatModel.chatPartnerImage,
+        "doctor_name": doctorProfile?['full_name'] ?? chatModel.currentUserName,
+        "parent_name": parentProfile?['full_name'] ?? chatModel.chatPartnerName,
+      }, onConflict: 'id');
     } catch (e, stack) {
       log("❌ Error initializing chat: $e");
       log("🪜 Stack trace: $stack");

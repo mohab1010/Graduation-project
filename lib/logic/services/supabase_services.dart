@@ -8,7 +8,6 @@ import 'package:wesal/logic/services/zego_services/zego_services.dart';
 import 'package:wesal/presentation/screens/auth/sign_up_screen.dart';
 import 'package:wesal/presentation/widgets/doctors/bottom_navigation_bar_doctor.dart';
 import 'package:wesal/presentation/widgets/parent/bottom_navigation_bar_parent.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,9 +55,8 @@ class SupabaseServices {
     String password,
   ) async {
     final response = await Supabase.instance.client.auth.signUp(
-      email: emailController.text,
-      password: passController.text,
-      // emailRedirectTo: 'autism://login-callback',
+      email: email,
+      password: password,
     );
 
     if (!context.mounted) return;
@@ -75,102 +73,81 @@ class SupabaseServices {
   /////////             Future of signin              //////////
   //////////////////////////////////////////////////////////////
   Future<void> signIn(BuildContext context) async {
-    try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: emailController.text,
-        password: passController.text,
-      );
+    // 1. authenticate
+    final authResponse = await Supabase.instance.client.auth
+        .signInWithPassword(
+          email: emailController.text.trim(),
+          password: passController.text.trim(),
+        )
+        .timeout(const Duration(seconds: 60));
 
-      if (response.user != null) {
-        log("Wait for token");
-        final firebaseMessaging = getIt<FirebaseMessaging>();
-        final token = await firebaseMessaging.getToken();
-        // final response = await Supabase.instance.client
-        //     .from("profiles")
-        //     .select()
-        //     .eq("id", Supabase.instance.client.auth.currentUser!.id)
-        //     .single();
-        final response = await Supabase.instance.client
-            .from("profiles")
-            .select('full_name, user_zego_id, role, tokens')
-            .eq("id", Supabase.instance.client.auth.currentUser!.id)
-            .single();
-        ////////////////////////////////////////////
-        String userRoleSignIn = response["role"]; // ✅ المهم
-
-        if (userRole != userRoleSignIn) {
-          await Supabase.instance.client.auth.signOut();
-
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.warning,
-            animType: AnimType.scale,
-            dismissOnTouchOutside: false,
-            title: "Wrong Account Type",
-            desc: userRole == 'doctor'
-                ? "This account is not registered as a Doctor.\nPlease login with a Doctor account."
-                : "This account is not registered as a Parent.\nPlease login with a Parent account.",
-            btnOkText: "OK",
-            btnOkOnPress: () {},
-          )..show();
-
-          return; // ⛔ وقف تسجيل الدخول فورًا
-        }
-        ///////////////////////////////////////////////
-        String userName = response["full_name"];
-        String userZegoId = (response["user_zego_id"]).toString();
-        await ZegoServices.onUserLogin(userId: userZegoId, userName: userName);
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userRole', userRoleSignIn);
-
-        final currentTokens = response["tokens"] ?? [];
-        if (!currentTokens.contains(token)) {
-          final updatedTokens = [...currentTokens, token];
-          await supabase
-              .from("profiles")
-              .update({"tokens": updatedTokens})
-              .eq("id", Supabase.instance.client.auth.currentUser!.id);
-        }
-        log("Done");
-        print('Login successful');
-        if (userRoleSignIn == 'doctor') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => MainBottomNavDoctor()),
-          );
-        } else if (userRoleSignIn == 'parent') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => MainBottomNavParent()),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Unknown user role")));
-        }
-      } else {
-        // إذا ما لقى الحساب
-        _showSignUpDialog(context);
-      }
-    } catch (e) {
-      if (e.toString().contains("Invalid login credentials")) {
-        _showSignUpDialog(context);
-      } else {
-        // AwesomeDialog? dialog;
-        //
-        // dialog = AwesomeDialog(
-        //   context: context,
-        //   dismissOnTouchOutside: false,
-        //   dialogType: DialogType.warning,
-        //   animType: AnimType.bottomSlide,
-        //   btnOkOnPress: () {},
-        //   desc: "Please verify your account before logging in",
-        // )..show();
-        // dialog;
-        print('Error: $e');
-      }
+    if (authResponse.user == null) {
+      if (context.mounted) _showSignUpDialog(context);
+      return;
     }
+
+    // 2. get role only
+    final profile = await Supabase.instance.client
+        .from("profiles")
+        .select('full_name, user_zego_id, role')
+        .eq("id", authResponse.user!.id)
+        .single()
+        .timeout(const Duration(seconds: 60));
+
+    final String role = profile["role"] ?? '';
+    final String userName = profile["full_name"] ?? "User";
+    final String zegoId =
+        profile["user_zego_id"]?.toString() ?? authResponse.user!.id;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userRole', role);
+    userRole = role;
+
+    // 3. navigate
+    if (!context.mounted) return;
+    if (role == 'doctor') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainBottomNavDoctor()),
+      );
+    } else if (role == 'parent') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MainBottomNavParent()),
+      );
+    } else {
+      throw Exception('Unknown role: $role');
+    }
+
+    // 4. background: firebase token + zego (don't block login)
+    Future(() async {
+      try {
+        final token = await getIt<FirebaseMessaging>()
+            .getToken()
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+        if (token != null) {
+          final current = await supabase
+              .from("profiles")
+              .select('tokens')
+              .eq("id", authResponse.user!.id)
+              .single();
+          final List tokens = current["tokens"] ?? [];
+          if (!tokens.contains(token)) {
+            await supabase
+                .from("profiles")
+                .update({"tokens": [...tokens, token]})
+                .eq("id", authResponse.user!.id);
+          }
+        }
+      } catch (e) {
+        log("Token update error: $e");
+      }
+      try {
+        await ZegoServices.onUserLogin(userId: zegoId, userName: userName);
+      } catch (e) {
+        log("Zego init error: $e");
+      }
+    });
   }
 
   //////////////////////////////////////////////////////////////
@@ -224,25 +201,22 @@ class SupabaseServices {
   //////////////////////////////////////////////////////////////
   Future<void> deleteChild(String childId, BuildContext context) async {
     try {
-      final response = await Supabase.instance.client
+      await Supabase.instance.client
           .from('children')
           .delete()
-          .eq('id', childId); // شرط الحذف حسب id الطفل
+          .eq('id', childId);
 
-      if (response != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Child deleted successfully')),
-        );
-
-        // ✅ إعادة تحميل البيانات بعد الحذف
-        await context.read<ChildrenCubit>().fetchChildrenForCurrentUser();
-      }
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Child deleted successfully')),
+      );
+      await context.read<ChildrenCubit>().fetchChildrenForCurrentUser();
     } catch (e) {
       debugPrint('Delete error: $e');
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error deleting child: $e')));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting child: $e')),
+      );
     }
   }
 }

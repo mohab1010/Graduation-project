@@ -2,65 +2,70 @@ import 'dart:developer' as developer;
 import 'package:wesal/logic/models/message_model.dart';
 import 'package:wesal/logic/services/variables_app.dart';
 import 'package:bloc/bloc.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 part 'chat_with_ai_state.dart';
 
 class ChatWithAi extends Cubit<ChatWithAiState> {
-  late final GenerativeModel _model;
+  final Dio _dio = Dio();
   List<Message> _messages = [];
 
   ChatWithAi() : super(ChatWithAiInitial()) {
-    _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: geminiApiKey,
-    );
-    // Add initial welcome message
-    final welcomeMessage = Message(
+    _messages.add(Message(
       text: 'Hello! I\'m here to help with autism care for children. Ask me about behaviors, routines, or anything related. What can I assist you with today?',
       isUser: false,
       timestamp: DateTime.now(),
-    );
-    _messages.add(welcomeMessage);
+    ));
     emit(ChatWithAiLoaded(List.from(_messages)));
   }
 
   Future<void> sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
-    final userMessage = Message(text: message, isUser: true, timestamp: DateTime.now());
-    _messages.add(userMessage);
+    _messages.add(Message(text: message, isUser: true, timestamp: DateTime.now()));
     emit(ChatWithAiLoading(List.from(_messages)));
 
     try {
-      // Build prompt with system + all previous messages (excluding the current user message for context)
-      String prompt = autismSystemPrompt + '\n\nPrevious conversation:\n';
-      for (int i = 0; i < _messages.length - 1; i++) {
-        final msg = _messages[i];
-        final role = msg.isUser ? 'User' : 'Assistant';
-        prompt += '$role: ${msg.text}\n';
+      final List<Map<String, String>> chatHistory = [
+        {'role': 'system', 'content': autismSystemPrompt},
+      ];
+
+      for (final msg in _messages) {
+        chatHistory.add({
+          'role': msg.isUser ? 'user' : 'assistant',
+          'content': msg.text,
+        });
       }
-      prompt += 'User: $message\nAssistant:';
 
-      developer.log('Sending prompt: $prompt');
+      final response = await _dio.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        data: {
+          'model': 'llama-3.1-8b-instant',
+          'messages': chatHistory,
+          'max_tokens': 800,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $groqApiKey',
+            'Content-Type': 'application/json',
+          },
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
 
-      final response = await _model.generateContent([Content.text(prompt)]);
-      final text = response.text ?? 'Try another question. I\'m here to help!';
+      final text = response.data['choices']?[0]?['message']?['content']
+          ?? 'Try another question. I\'m here to help!';
 
-      developer.log('Received response: $text');
-
-      final assistantMessage = Message(text: text, isUser: false, timestamp: DateTime.now());
-      _messages.add(assistantMessage);
+      _messages.add(Message(text: text, isUser: false, timestamp: DateTime.now()));
       emit(ChatWithAiLoaded(List.from(_messages)));
     } catch (e) {
-      developer.log('Error in sendMessage: $e');
-      // Keep the user message, add error as assistant message
-      final errorMessage = Message(
-        text: 'Sorry, I encountered an error. Please try again. Error: ${e.toString()}',
+      developer.log('Chatbot error: $e');
+      _messages.add(Message(
+        text: 'Sorry, I\'m having trouble connecting right now. Please check your internet and try again.',
         isUser: false,
         timestamp: DateTime.now(),
-      );
-      _messages.add(errorMessage);
+      ));
       emit(ChatWithAiLoaded(List.from(_messages)));
     }
   }
@@ -82,7 +87,7 @@ Allowed topics:
 - Emotional regulation and social skills.
 - Daily routine tips and behavior guidance.
 - When to seek help from a therapist.
-If asked: "Does my child have autism?" → say you cannot diagnose.
-If asked about medication → say only doctors can recommend medication.
+If asked about diagnosis: say you cannot diagnose.
+If asked about medication: say only doctors can recommend medication.
 """;
 }

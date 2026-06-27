@@ -145,7 +145,7 @@ class _ContactScreenState extends State<ContactScreen> {
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
+                                        FaIcon(
                                           FontAwesomeIcons.phone,
                                           size: 35,
                                           color: Colors.green,
@@ -171,7 +171,7 @@ class _ContactScreenState extends State<ContactScreen> {
                                 Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    FaIcon(
                                       FontAwesomeIcons.facebook,
                                       size: 40,
                                       color: Colors.blue,
@@ -194,7 +194,7 @@ class _ContactScreenState extends State<ContactScreen> {
                                 Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    FaIcon(
                                       FontAwesomeIcons.whatsapp,
                                       size: 40,
                                       color: Colors.green,
