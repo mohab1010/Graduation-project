@@ -1,6 +1,6 @@
 import 'dart:developer' as developer;
 import 'package:wesal/logic/models/message_model.dart';
-import 'package:wesal/logic/services/variables_app.dart';
+import 'package:wesal/logic/services/app_secrets.dart';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
@@ -46,7 +46,7 @@ class ChatWithAi extends Cubit<ChatWithAiState> {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer $groqApiKey',
+            'Authorization': 'Bearer $kGroqApiKey',
             'Content-Type': 'application/json',
           },
           sendTimeout: const Duration(seconds: 30),
