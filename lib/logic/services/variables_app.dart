@@ -217,7 +217,7 @@ File? selectedImage;
 /////             select doctor or parent              ///////
 //////////////////////////////////////////////////////////////
 String userRole = '';
-String groqApiKey = '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';
+String groqApiKey = '';
 
 void onSignUpSuccess(BuildContext context) {
   if (userRole == 'doctor') {
